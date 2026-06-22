@@ -33,7 +33,7 @@ export default function Contact() {
     setStatus("loading");
 
     try {
-      const response = await fetch("https://mr-warehouse-backend.onrender.com", {
+      const response = await fetch("https://mr-warehouse-backend.onrender.com/leads", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
