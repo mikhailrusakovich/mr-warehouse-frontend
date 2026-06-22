@@ -1,8 +1,64 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import SectionHeader from "@/components/SectionHeader";
 import Input from "@/components/Input";
 
 export default function Contact() {
+  const [form, setForm] = useState({
+    name: "",
+    company: "",
+    email: "",
+    phone: "",
+    service: "",
+    message: "",
+  });
+
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
+    "idle"
+  );
+
+  const handleChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setForm({
+      ...form,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatus("loading");
+
+    try {
+      const response = await fetch("http://localhost:3001/leads", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      if (!response.ok) {
+        throw new Error("Lead submission failed");
+      }
+
+      setStatus("success");
+      setForm({
+        name: "",
+        company: "",
+        email: "",
+        phone: "",
+        service: "",
+        message: "",
+      });
+    } catch {
+      setStatus("error");
+    }
+  };
+
   return (
     <section
       id="contact"
@@ -34,21 +90,74 @@ export default function Contact() {
         </div>
 
         <div className="rounded-[32px] border border-white/10 bg-white/[0.05] p-7 backdrop-blur-sm">
-          <form className="grid gap-4">
-            <Input placeholder="Full Name" />
-            <Input placeholder="Company Name" />
-            <Input placeholder="Email Address" />
-            <Input placeholder="Phone Number" />
-            <Input placeholder="Service Needed" />
+          <form className="grid gap-4" onSubmit={handleSubmit}>
+            <Input
+              name="name"
+              placeholder="Full Name"
+              value={form.name}
+              onChange={handleChange}
+              required
+            />
 
             <Input
+              name="company"
+              placeholder="Company Name"
+              value={form.company}
+              onChange={handleChange}
+            />
+
+            <Input
+              name="email"
+              type="email"
+              placeholder="Email Address"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+
+            <Input
+              name="phone"
+              placeholder="Phone Number"
+              value={form.phone}
+              onChange={handleChange}
+            />
+
+            <Input
+              name="service"
+              placeholder="Service Needed"
+              value={form.service}
+              onChange={handleChange}
+            />
+
+            <Input
+              name="message"
               placeholder="Tell us about your warehouse or operational challenge..."
+              value={form.message}
+              onChange={handleChange}
               textarea
             />
 
-            <button className="mt-1 h-14 rounded-2xl bg-[#2563EB] text-lg font-semibold text-white transition-all hover:bg-[#1D4ED8]">
-              Request Free Assessment
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="mt-1 h-14 rounded-2xl bg-[#2563EB] text-lg font-semibold text-white transition-all hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {status === "loading"
+                ? "Sending..."
+                : "Request Free Assessment"}
             </button>
+
+            {status === "success" && (
+              <p className="text-sm font-medium text-green-300">
+                Thank you. Your request has been sent.
+              </p>
+            )}
+
+            {status === "error" && (
+              <p className="text-sm font-medium text-red-300">
+                Something went wrong. Please try again.
+              </p>
+            )}
           </form>
         </div>
       </div>
@@ -78,9 +187,7 @@ export default function Contact() {
             </a>
           </div>
 
-          <p className="text-sm text-[#CBD5E1]">
-            © 2026 MR Warehouse LLC
-          </p>
+          <p className="text-sm text-[#CBD5E1]">© 2026 MR Warehouse LLC</p>
         </div>
       </footer>
     </section>
